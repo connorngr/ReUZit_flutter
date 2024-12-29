@@ -8,11 +8,20 @@ import 'package:untitled2/screens/listing/edit_listing_screen.dart';
 import 'package:untitled2/screens/listing/listing_detail_screen.dart';
 import 'package:untitled2/screens/splash.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-
+import 'package:provider/provider.dart';
+import 'package:untitled2/providers/listing_provider.dart';
+import 'package:untitled2/providers/user_provider.dart';
+import 'package:untitled2/screens/user/user_profile_screen.dart';
+import './navbar/main_screen.dart';
 Future main() async {
   await dotenv.load(fileName: "dotenv");
-  runApp(MyApp());
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ListingProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: MyApp(),
+    ),);
 }
 
 class MyApp extends StatelessWidget {
@@ -28,10 +37,11 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => SplashScreen(),
         '/login': (context) => LoginScreen(),
-        '/home': (context) => HomeScreen(),
+        '/home': (context) => MainScreen(),
         '/register': (context) => RegisterScreen(),
         '/addListing': (context) => const AddOrEditListingScreen(),
         '/editListing': (context) => const EditListingScreen(), // New route
+        '/settings': (context) => UserProfileScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == ListingDetailScreen.routeName) {

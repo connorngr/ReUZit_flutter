@@ -14,7 +14,9 @@ class DioClient {
     // Add interceptors
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'jwt_token');
+        final token = await _storage.read(key: 'jwtToken');
+        print("Retrieved token: $token"); 
+        
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }

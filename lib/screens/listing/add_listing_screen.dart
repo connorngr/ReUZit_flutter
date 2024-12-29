@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled2/models/listing.dart';
 import 'package:untitled2/services/listing_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AddOrEditListingScreen extends StatefulWidget {
   final Listing? listing; // Pass this for editing
@@ -18,6 +19,11 @@ class _AddOrEditListingScreenState extends State<AddOrEditListingScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
+  late TextEditingController _categoryIdController;
+  late TextEditingController _conditionController;
+  late TextEditingController _statusController;
+
+  List<XFile>? _images;
 
   @override
   void initState() {
@@ -25,6 +31,8 @@ class _AddOrEditListingScreenState extends State<AddOrEditListingScreen> {
     _titleController = TextEditingController(text: widget.listing?.title ?? '');
     _descriptionController = TextEditingController(text: widget.listing?.description ?? '');
     _priceController = TextEditingController(text: widget.listing?.price?.toString() ?? '');
+    _categoryIdController = TextEditingController(text: widget.listing?.category ?? '');
+    _conditionController = TextEditingController(text: widget.listing?.condition ?? 'New');
   }
 
   @override
@@ -32,20 +40,30 @@ class _AddOrEditListingScreenState extends State<AddOrEditListingScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
+    _categoryIdController.dispose();
+    _conditionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImages() async {
+    final ImagePicker _picker = ImagePicker();
+    final List<XFile>? selectedImages = await _picker.pickMultiImage();
+    setState(() {
+      _images = selectedImages;
+    });
   }
 
   void _saveListing() async {
     if (_formKey.currentState!.validate()) {
       final listing = Listing(
-        id: widget.listing?.id, // Use existing ID if editing
+        id: widget.listing?.id,
         title: _titleController.text,
         description: _descriptionController.text,
         price: int.parse(_priceController.text),
-        category: widget.listing?.category ?? 'Default', // Update as needed
-        condition: widget.listing?.condition ?? 'New',
-        status: widget.listing?.status ?? 'Available',
-        images: widget.listing?.images ?? [],
+        category: _categoryIdController.text,
+        condition: _conditionController.text,
+        status: widget.listing?.status ?? 'Available', 
+        images: _images?.map((image) => image.path).toList() ?? [],
         createdAt: widget.listing?.createdAt ?? DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -92,6 +110,21 @@ class _AddOrEditListingScreenState extends State<AddOrEditListingScreen> {
                 decoration: const InputDecoration(labelText: 'Price'),
                 keyboardType: TextInputType.number,
                 validator: (value) => value == null || value.isEmpty ? 'Price is required' : null,
+              ),
+              TextFormField(
+                controller: _categoryIdController,
+                decoration: const InputDecoration(labelText: 'Category ID'),
+                validator: (value) => value == null || value.isEmpty ? 'Category ID is required' : null,
+              ),
+              TextFormField(
+                controller: _conditionController,
+                decoration: const InputDecoration(labelText: 'Condition'),
+                validator: (value) => value == null || value.isEmpty ? 'Condition is required' : null,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _pickImages,
+                child: Text('Pick Images'),
               ),
               const SizedBox(height: 20),
               ElevatedButton(

@@ -10,7 +10,21 @@ class ListingService {
 
   Future<List<Listing>> fetchListings() async {
     try {
-      final response = await _dio.get('/listings');
+      final response = await _dio.get('/listings/active/not-useremail');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.map((listing) => Listing.fromJson(listing)).toList();
+      } else {
+        throw Exception('Failed to load listings');
+      }
+    } catch (error) {
+      throw Exception('Error fetching listings: $error');
+    }
+  }
+
+    Future<List<Listing>> fetchListingsOfMe() async {
+    try {
+      final response = await _dio.get('/listings/me');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;
         return data.map((listing) => Listing.fromJson(listing)).toList();

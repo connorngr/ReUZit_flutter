@@ -47,7 +47,6 @@ class Listing {
       'price': price,
       'category': category,
       'condition': condition,
-      'status': status,
       'images': images,
     };
   }
@@ -60,7 +59,7 @@ class Listing {
       'price': price.toString(),
       'category': category,
       'condition': condition,
-      'status': status,
+      
       // Example: Add files if required for images
       'images': images.map((imagePath) async {
         return await MultipartFile.fromFile(imagePath, filename: imagePath.split('/').last);
