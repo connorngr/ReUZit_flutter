@@ -1,4 +1,9 @@
-import 'dart:convert';
+import 'dart:io' as io;
+import 'package:http_parser/http_parser.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:html' as html;
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 
 class User {
   final int id;
@@ -49,5 +54,55 @@ class User {
       'money': money,
       'bio': bio,
     };
+  }
+  static Future<FormData> toForm(dynamic image) async {
+    final formData = FormData();
+
+    if (image != null) {
+      if (!kIsWeb) {
+        // Mobile platform
+        if (image is String) {
+          final file = io.File(image);
+          if (await file.exists()) {
+            formData.files.add(MapEntry(
+              'image',
+              await MultipartFile.fromFile(
+                image,
+                filename: image.split('/').last,
+                contentType: MediaType("image", "jpeg"),
+              ),
+            ));
+          }
+        }
+      } else {
+        // Web platform
+        if (image is XFile) {
+          final bytes = await image.readAsBytes();
+          formData.files.add(MapEntry(
+            'image',
+            MultipartFile.fromBytes(
+              bytes,
+              filename: image.name,
+              contentType: MediaType("image", "jpeg"),
+            ),
+          ));
+        } else if (image is html.File) {
+          final reader = html.FileReader();
+          reader.readAsArrayBuffer(image);
+          await reader.onLoadEnd.first;
+
+          formData.files.add(MapEntry(
+            'image',
+            MultipartFile.fromBytes(
+              reader.result as List<int>,
+              filename: image.name,
+              contentType: MediaType("image", "jpeg"),
+            ),
+          ));
+        }
+      }
+    }
+
+    return formData;
   }
 }

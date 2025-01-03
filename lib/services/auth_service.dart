@@ -18,7 +18,6 @@ class AuthService {
       });
       if (response.statusCode == 200) {
         final token = response.data['token'];
-        print("\n Retrieved token: $token"); 
       if (token != null) {
         // Save token for future use
         await _storage.write(key: 'jwtToken', value: token);
@@ -29,12 +28,8 @@ class AuthService {
         return token;
       }
       }
-      // Handle unexpected response
-      print("Unexpected response: ${response.data}");
       return null;
     } catch (e) {
-      // Log and return null on error
-      print("Login error: $e");
       return null;
     }
   }
@@ -47,7 +42,6 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print("Error retrieving user from storage: $e");
       return null;
     }
   }
@@ -76,7 +70,7 @@ class AuthService {
       final token = response.data['token'];
       if (token != null) {
         // Save JWT token to secure storage
-        await _storage.write(key: 'jwt_token', value: token);
+        await _storage.write(key: 'jwtToken', value: token);
         return token;
       } else {
         throw Exception("Failed to register");
@@ -88,13 +82,10 @@ class AuthService {
   }
   Future<User?> getCurrentUser() async {
     try {
-      print('Attempting to fetch current user...');
       Response response = await _dio.get('/users/current');
-      print('Response received: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = response.data;
-        print('User data: $data');
         final user = User.fromJson(data);
 
         // Store user data in secure storage
@@ -106,10 +97,8 @@ class AuthService {
       }
     } on DioException catch (e) {
       if (e.response != null) {
-        print('Dio error response: ${e.response?.data}');
         throw Exception(e.response?.data['message'] ?? 'Failed to fetch user info');
       } else {
-        print('Dio error message: ${e.message}');
         throw Exception(e.message);
       }
     }
@@ -117,7 +106,7 @@ class AuthService {
   Future<void> logout() async {
     try {
       // Remove the JWT token from secure storage
-      await _storage.delete(key: 'jwt_token');
+      await _storage.delete(key: 'jwtToken');
     } catch (e) {
       print('Error during logout: $e');
     }

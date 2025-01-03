@@ -33,7 +33,7 @@ class GoogleAuthService {
         if (response.statusCode == 200) {
           final token = response.data['token'];
           // Save the JWT token to secure storage
-          await _storage.write(key: 'jwt_token', value: token);
+          await _storage.write(key: 'jwtToken', value: token);
           return token;
         } else {
           // Handle failure

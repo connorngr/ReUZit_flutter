@@ -6,8 +6,23 @@ class ListingProvider with ChangeNotifier {
   final ListingService _listingService = ListingService();
   List<Listing> _listings = [];
   List<Listing> _listingsOfMe = [];
+  bool _isLoading = false;
+  String? _error;
+
   List<Listing> get listings => _listings;
   List<Listing> get listingsOfMe => _listingsOfMe;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message) {
+    _error = message;
+    notifyListeners();
+  }
 
   Future<void> fetchListings() async {
     try {
@@ -20,7 +35,7 @@ class ListingProvider with ChangeNotifier {
   Future<void> fetchListingsOfMe() async {
     try {
       _listingsOfMe = await _listingService.fetchListingsOfMe();
-      notifyListeners();
+      notifyListeners();  
     } catch (error) {
       throw error;
     }
@@ -28,34 +43,63 @@ class ListingProvider with ChangeNotifier {
 
   Future<void> addListing(Listing listing) async {
     try {
+      _setLoading(true);
+      _setError(null);
+
       await _listingService.addListing(listing);
-      _listings.add(listing);
+      
+      // Refresh listings after successful addition
+      await fetchListingsOfMe();
+      await fetchListings();
+      
       notifyListeners();
     } catch (error) {
+      _setError(error.toString());
       throw error;
+    } finally {
+      _setLoading(false);
     }
   }
 
-  Future<void> updateListing(Listing listing) async {
-    try {
-      await _listingService.updateListing(listing.id!, listing.toForm());
-      final index = _listings.indexWhere((l) => l.id == listing.id);
-      if (index != -1) {
-        _listings[index] = listing;
-        notifyListeners();
-      }
-    } catch (error) {
-      throw error;
+Future<void> updateListing(Listing listing) async {
+  try {
+    _setLoading(true);
+    _setError(null);
+    
+    if (listing.id == null) {
+      throw Exception('Listing ID is required for update');
     }
+
+    final response = await _listingService.updateListing(listing.id!, listing);
+    
+      await fetchListingsOfMe();
+      await fetchListings();
+      notifyListeners();
+  } catch (error) {
+    _setError(error.toString());
+    throw error;
+  } finally {
+    _setLoading(false);
   }
+}
 
   Future<void> deleteListing(int id) async {
     try {
-      await _listingService.deleteListing(id);
-      _listings.removeWhere((listing) => listing.id == id);
+      await _listingService.deleteListings([id]);
+      await fetchListingsOfMe();
+      await fetchListings();
+      
       notifyListeners();
     } catch (error) {
+      _setError(error.toString());
       throw error;
+    } finally {
+      _setLoading(false);
     }
+    // Add method to clear error
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
   }
 }
