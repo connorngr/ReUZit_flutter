@@ -6,7 +6,7 @@ import 'package:untitled2/utils/dio_client.dart';
 
 class GoogleAuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    serverClientId: dotenv.get('GOOGLE_CLIENT_ID'),
+    clientId: dotenv.get('GOOGLE_CLIENT_ID'),
       scopes: ["profile", "email"],
       forceCodeForRefreshToken: true,);
   final FlutterSecureStorage _storage = FlutterSecureStorage();
