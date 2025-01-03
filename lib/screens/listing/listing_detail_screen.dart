@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:untitled2/models/listing.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_html/flutter_html.dart';
+// import 'package:flutter_html/flutter_html.dart';
 
 class ListingDetailScreen extends StatelessWidget {
   final Listing listing;
@@ -47,13 +47,13 @@ class ListingDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Description',
+              'Description${listing.description}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            Html(
-              data: listing.description,
-            ),
+            // Html(
+            //   data: listing.description,
+            // ),
           ],
         ),
       ),

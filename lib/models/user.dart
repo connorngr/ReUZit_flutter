@@ -1,9 +1,9 @@
 import 'dart:io' as io;
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:html' as html;
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:universal_html/html.dart' as html;
 
 class User {
   final int id;
@@ -27,7 +27,7 @@ class User {
     required this.money,
     this.bio = '',
   });
-//What is factory?
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
@@ -55,6 +55,7 @@ class User {
       'bio': bio,
     };
   }
+
   static Future<FormData> toForm(dynamic image) async {
     final formData = FormData();
 

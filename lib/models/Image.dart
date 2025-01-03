@@ -2,10 +2,10 @@ import 'dart:io' as io;
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:html' as html;
 import 'package:image_picker/image_picker.dart';
+import 'package:universal_html/html.dart' as html;
 
-class ImageModel {  // Changed from Image to ImageModel
+class ImageModel {
   final int? id;
   final String url;
 
@@ -15,7 +15,7 @@ class ImageModel {  // Changed from Image to ImageModel
   });
 
   factory ImageModel.fromJson(Map<String, dynamic> json) {
-    return ImageModel(  // Update constructor name
+    return ImageModel(
       id: json['id'] as int?,
       url: json['url'] as String,
     );
@@ -91,7 +91,7 @@ class ImageModel {  // Changed from Image to ImageModel
             MapEntry(
               'files',
               MultipartFile.fromBytes(
-                reader.result as List<int>,
+                List.from(reader.result as List<int>),
                 filename: image.name,
                 contentType: MediaType('image', 'jpeg'),
               ),
