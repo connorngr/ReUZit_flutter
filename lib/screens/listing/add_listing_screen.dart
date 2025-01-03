@@ -34,13 +34,13 @@ class _AddOrEditListingScreenState extends State<AddListingScreen> {
   @override
   void initState() {
     super.initState();
-    // _titleController = TextEditingController(text: widget.listing?.title ?? '');
-    // _descriptionController =
-    //     TextEditingController(text: widget.listing?.description ?? '');
-    // _priceController =
-    //     TextEditingController(text: widget.listing?.price?.toString() ?? '');
-    // _conditionController =
-    //     TextEditingController(text: widget.listing?.condition ?? 'New');
+    _titleController = TextEditingController(text: widget.listing?.title ?? '');
+    _descriptionController =
+        TextEditingController(text: widget.listing?.description ?? '');
+    _priceController =
+        TextEditingController(text: widget.listing?.price?.toString() ?? '');
+    _conditionController =
+        TextEditingController(text: widget.listing?.condition ?? 'New');
     fetchEnumData();
     fetchCategories();
   }
@@ -168,23 +168,23 @@ class _AddOrEditListingScreenState extends State<AddListingScreen> {
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Price is required' : null,
               ),
-              // DropdownButtonFormField<String>(
-              //   decoration: const InputDecoration(labelText: 'Category'),
-              //   value: _selectedCategory,
-              //   items: _categories.map((Category category) {
-              //     return DropdownMenuItem<String>(
-              //       value: category.id.toString(), // Make sure this is the ID
-              //       child: Text(category.name),
-              //     );
-              //   }).toList(),
-              //   validator: (value) =>
-              //       value == null ? 'Please select a category' : null,
-              //   onChanged: (String? newValue) {
-              //     setState(() {
-              //       _selectedCategory = newValue;
-              //     });
-              //   },
-              // ),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(labelText: 'Category'),
+                value: _selectedCategory,
+                items: _categories.map((Category category) {
+                  return DropdownMenuItem<String>(
+                    value: category.id.toString(), // Make sure this is the ID
+                    child: Text(category.name),
+                  );
+                }).toList(),
+                validator: (value) =>
+                    value == null ? 'Please select a category' : null,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                  });
+                },
+              ),
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(labelText: 'Condition'),
                 items: _conditions.map((String condition) {
