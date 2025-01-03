@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:untitled2/models/listing.dart';
 import 'package:untitled2/screens/listing/listing_card.dart';
-import 'package:untitled2/services/auth_service.dart';
-import '../services/listing_service.dart';
+import 'package:untitled2/providers/listing_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,60 +10,78 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final ListingService _listingService = ListingService();
-  late Future<List<Listing>> _listings;
-  final AuthService _authService = AuthService();
+  TextEditingController _searchController = TextEditingController();
+  List<Listing> _filteredListings = [];
+
   @override
   void initState() {
     super.initState();
-    _listings = _listingService.fetchListings();
+    Provider.of<ListingProvider>(context, listen: false).fetchListings();
+    _searchController.addListener(_filterListings);
+  }
+
+  void _filterListings() {
+    final query = _searchController.text.toLowerCase();
+    final allListings =
+        Provider.of<ListingProvider>(context, listen: false).listings;
+
+    setState(() {
+      _filteredListings = allListings.where((listing) {
+        return listing.title.toLowerCase().contains(query) ||
+            listing.category.toLowerCase().contains(query);
+      }).toList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Marketplace"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              // Perform logout
-              await _authService.logout();
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              labelText: 'Search Listings',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.search),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Consumer<ListingProvider>(
+            builder: (context, listingProvider, child) {
+              final listingsToShow = _searchController.text.isEmpty
+                  ? listingProvider.listings
+                  : _filteredListings;
 
-              // Navigate to login screen
-              Navigator.pushReplacementNamed(context, '/login');
+              if (listingsToShow.isEmpty) {
+                return Center(child: Text("No listings found"));
+              } else {
+                return GridView.builder(
+                  padding: EdgeInsets.all(8),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childAspectRatio: 3 / 4,
+                  ),
+                  itemCount: listingsToShow.length,
+                  itemBuilder: (context, index) {
+                    return ListingCard(listing: listingsToShow[index]);
+                  },
+                );
+              }
             },
           ),
-        ],
-      ),
-      body: FutureBuilder<List<Listing>>(
-        future: _listings,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No listings found"));
-          } else {
-            final listings = snapshot.data!;
-            return GridView.builder(
-              padding: EdgeInsets.all(8),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 3 / 4,
-              ),
-              itemCount: listings.length,
-              itemBuilder: (context, index) {
-                return ListingCard(listing: listings[index]);
-              },
-            );
-          }
-        },
-      ),
+        ),
+      ],
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }

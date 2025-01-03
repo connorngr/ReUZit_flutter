@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:untitled2/models/listing.dart';
 import 'package:untitled2/screens/listing/listing_detail_screen.dart';
+import 'package:intl/intl.dart';
 
 class ListingCard extends StatelessWidget {
   static final String image_url = dotenv.get('IMAGE_URL');
@@ -10,6 +11,7 @@ class ListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final formattedPrice = NumberFormat.currency(locale: 'vi_VN', symbol: 'VND').format(listing.price);
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -47,7 +49,7 @@ class ListingCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                "${listing.price} VND",
+                "$formattedPrice",
                 style: TextStyle(color: Colors.green),
               ),
             ),

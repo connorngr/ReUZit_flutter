@@ -1,4 +1,9 @@
+import 'dart:io' as io;
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:html' as html;
+import 'package:image_picker/image_picker.dart';
 
 class Listing {
   final int? id;
@@ -8,7 +13,7 @@ class Listing {
   final String category;
   final String condition;
   final String status;
-  final List<String> images;
+  final List<dynamic> images;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -47,24 +52,72 @@ class Listing {
       'price': price,
       'category': category,
       'condition': condition,
-      'status': status,
       'images': images,
     };
   }
 
-  FormData toForm() {
-    return FormData.fromMap({
-      if (id != null) 'id': id.toString(), // Include id if it's not null (for updates)
-      'title': title,
-      'description': description,
-      'price': price.toString(),
-      'category': category,
-      'condition': condition,
-      'status': status,
-      // Example: Add files if required for images
-      'images': images.map((imagePath) async {
-        return await MultipartFile.fromFile(imagePath, filename: imagePath.split('/').last);
-      }).toList(),
-    });
+ Future<FormData> toForm() async {
+  final formData = FormData();
+
+  // Add basic fields
+  formData.fields.addAll([
+    MapEntry('title', title),
+    MapEntry('description', description),
+    MapEntry('price', price.toString()),
+    MapEntry('categoryId', category), // Change 'category' to 'categoryId'
+    MapEntry('condition', condition),
+  ]);
+
+  // Handle image uploads
+  if (images.isNotEmpty) {
+    if (!kIsWeb) {
+      // Mobile platform
+      for (var imagePath in images) {
+        if (imagePath is String) {
+          final file = io.File(imagePath);
+          if (await file.exists()) {
+            formData.files.add(MapEntry(
+              'images',
+              await MultipartFile.fromFile(
+                imagePath,
+                filename: imagePath.split('/').last,
+                contentType: MediaType("image", "jpeg"),
+              ),
+            ));
+          }
+        }
+      }
+    } else {
+      // Web platform
+      for (var image in images) {
+        if (image is XFile) {
+          final bytes = await image.readAsBytes();
+          formData.files.add(MapEntry(
+            'images',
+            MultipartFile.fromBytes(
+              bytes,
+              filename: image.name,
+              contentType: MediaType("image", "jpeg"),
+            ),
+          ));
+        } else if (image is html.File) {
+          final reader = html.FileReader();
+          reader.readAsArrayBuffer(image);
+          await reader.onLoadEnd.first;
+          
+          formData.files.add(MapEntry(
+            'images',
+            MultipartFile.fromBytes(
+              reader.result as List<int>,
+              filename: image.name,
+              contentType: MediaType("image", "jpeg"),
+            ),
+          ));
+        }
+      }
+    }
   }
+
+  return formData;
+}
 }

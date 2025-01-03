@@ -18,18 +18,30 @@ class AuthService {
       });
       if (response.statusCode == 200) {
         final token = response.data['token'];
-        if (token != null) {
-          // Save token for future use
-          await _storage.write(key: 'jwtToken', value: token);
-          return token;
-        }
+      if (token != null) {
+        // Save token for future use
+        await _storage.write(key: 'jwtToken', value: token);
+
+        // Fetch and store user data
+        // await getCurrentUser();
+
+        return token;
       }
-      // Handle unexpected response
-      print("Unexpected response: ${response.data}");
+      }
       return null;
     } catch (e) {
-      // Log and return null on error
-      print("Login error: $e");
+      return null;
+    }
+  }
+  Future<User?> getUserFromStorage() async {
+    try {
+      final userDataString = await _storage.read(key: 'userData');
+      if (userDataString != null) {
+        final userData = jsonDecode(userDataString);
+        return User.fromJson(userData);
+      }
+      return null;
+    } catch (e) {
       return null;
     }
   }
@@ -58,7 +70,7 @@ class AuthService {
       final token = response.data['token'];
       if (token != null) {
         // Save JWT token to secure storage
-        await _storage.write(key: 'jwt_token', value: token);
+        await _storage.write(key: 'jwtToken', value: token);
         return token;
       } else {
         throw Exception("Failed to register");
@@ -68,20 +80,22 @@ class AuthService {
       return null;
     }
   }
-
-
   Future<User?> getCurrentUser() async {
     try {
-      Response response = await _dio.get('/auth/current');
+      Response response = await _dio.get('/users/current');
 
       if (response.statusCode == 200) {
         final data = response.data;
-        return User.fromJson(data);
+        final user = User.fromJson(data);
+
+        // Store user data in secure storage
+        await _storage.write(key: 'userData', value: jsonEncode(data));
+
+        return user;
       } else {
         throw Exception("Failed to fetch user info");
       }
     } on DioException catch (e) {
-      // Handle Dio errors here
       if (e.response != null) {
         throw Exception(e.response?.data['message'] ?? 'Failed to fetch user info');
       } else {
@@ -89,11 +103,10 @@ class AuthService {
       }
     }
   }
-
   Future<void> logout() async {
     try {
       // Remove the JWT token from secure storage
-      await _storage.delete(key: 'jwt_token');
+      await _storage.delete(key: 'jwtToken');
     } catch (e) {
       print('Error during logout: $e');
     }
