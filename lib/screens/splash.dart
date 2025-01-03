@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'ReUzit',
+                'ReUZit',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,

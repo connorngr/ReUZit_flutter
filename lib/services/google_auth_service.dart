@@ -5,7 +5,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:untitled2/utils/dio_client.dart';
 
 class GoogleAuthService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(clientId: dotenv.get('GOOGLE_CLIENT_ID'),);
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: dotenv.get('GOOGLE_CLIENT_ID'),
+      scopes: ["profile", "email"],
+      forceCodeForRefreshToken: true,);
   final FlutterSecureStorage _storage = FlutterSecureStorage();
   final Dio _dio = DioClient().client;
   // Google SignIn function
@@ -20,13 +23,13 @@ class GoogleAuthService {
       }
 
       // Obtain the authentication code (authorization code)
-      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
 
       String? authCode = googleAuth.accessToken;
       if (authCode != null) {
         // Send the authorization code to the backend for processing
         final response = await _dio.post(
-          '/auth/google?authCode=$authCode'
+            '/auth/google?authCode=$authCode'
         );
 
         // Handle the response, which should include the JWT token
